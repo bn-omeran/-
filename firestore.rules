@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(data) {
+      return data.ownerId == request.auth.uid;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Item validations
+    function isValidItem(data) {
+      return data.name is string && data.name.size() >= 1 && data.name.size() <= 256
+        && (!('code' in data) || (data.code is string && data.code.size() <= 128))
+        && (!('category' in data) || (data.category is string && data.category.size() <= 128))
+        && (!('latestDate' in data) || (data.latestDate is string && data.latestDate.size() <= 64))
+        && (!('latestPerson' in data) || (data.latestPerson is string && data.latestPerson.size() <= 128))
+        && (!('latestUnit' in data) || (data.latestUnit is string))
+        && (!('latestWarehouseQty' in data) || (data.latestWarehouseQty is number))
+        && (!('latestDiffQty' in data) || (data.latestDiffQty is number))
+        && data.ownerId == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Record validations
+    function isValidRecord(data) {
+      return data.itemId is string && data.itemId.size() <= 128
+        && data.itemName is string && data.itemName.size() >= 1 && data.itemName.size() <= 256
+        && data.inventoryDate is string && data.inventoryDate.size() <= 64
+        && data.personName is string && data.personName.size() >= 1 && data.personName.size() <= 128
+        && data.quantity is number
+        && (!('location' in data) || (data.location is string && data.location.size() <= 128))
+        && (!('unit' in data) || (data.unit is string))
+        && (!('warehouseQty' in data) || (data.warehouseQty is number))
+        && (!('diffQty' in data) || (data.diffQty is number))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1024))
+        && (!('additionalFields' in data) || data.additionalFields is map)
+        && data.ownerId == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Rules for Items collection
+    match /items/{itemId} {
+      allow create: if isSignedIn()
+        && isValidItem(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isSignedIn()
+        && isOwner(existing())
+        && isValidItem(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+
+      allow delete: if isSignedIn()
+        && isOwner(existing());
+
+      allow read: if isSignedIn()
+        && isOwner(existing());
+    }
+
+    // Rules for subcollection records
+    match /items/{itemId}/records/{recordId} {
+      allow create: if isSignedIn()
+        && isValidRecord(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isSignedIn()
+        && isOwner(existing())
+        && isValidRecord(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+
+      allow delete: if isSignedIn()
+        && isOwner(existing());
+
+      allow read: if isSignedIn()
+        && isOwner(existing());
+    }
+  }
+}

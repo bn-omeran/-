@@ -1,0 +1,50 @@
+version: "3.8"
+
+# ==============================================================================
+# CasaOS Metadata & Custom App Store Package Extensions
+# This metadata block configures features, icons, categories, and port mapping
+# inside the CasaOS local dashboard.
+# ==============================================================================
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+    - arm/v7
+  main: jardi
+  author: "Abdurrahman Amiran"
+  category: "Utilities"
+  description:
+    en_us: "Jardi is a modern, responsive Arabic/English web application for inventory management, digital sheet layout, CSV imports, and real-time physical stock auditing/reconciliation."
+  tagline:
+    en_us: "Elegant Inventory Reconciliation & Stock Auditing System"
+  developer: "Abdurrahman Amiran"
+  icon: "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/inventory.png"
+  thumbnail: ""
+  title:
+    en_us: "Jardi"
+  scheme: http
+  port_map: "3000"
+
+services:
+  jardi:
+    container_name: jardi-app
+    image: jardi-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # If your build process requires compile-time Vite variables:
+        # You can declare them here so they are passed to Vite during build
+        - VITE_APP_URL=${APP_URL:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

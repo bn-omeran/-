@@ -1,0 +1,6 @@
+{
+  "name": "جردي - Daily Inventory Archive",
+  "description": "A clean, professional daily inventory archive system that allows users to search for inventory items, view their history, and import logs from CSV spreadsheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

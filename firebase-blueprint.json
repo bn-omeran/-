@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "Item": {
+      "title": "Item",
+      "description": "An inventory item tracked in the daily archive system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The unique or primary name of the inventory item." },
+        "code": { "type": "string", "description": "Item code, barcode, or SKU." },
+        "category": { "type": "string", "description": "Category of the item." },
+        "latestDate": { "type": "string", "description": "Latest inventory date." },
+        "latestPerson": { "type": "string", "description": "Name of the person who last checked the item." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of last update." },
+        "ownerId": { "type": "string", "description": "The UID of the user who owns or imported this item." }
+      },
+      "required": ["name", "createdAt", "updatedAt", "ownerId"]
+    },
+    "InventoryRecord": {
+      "title": "Inventory Record",
+      "description": "A specific historical inventory entry for an item.",
+      "type": "object",
+      "properties": {
+        "itemId": { "type": "string", "description": "The associated Item's document ID." },
+        "itemName": { "type": "string", "description": "Denormalized item name for fast reads." },
+        "inventoryDate": { "type": "string", "description": "Date when inventory was performed (YYYY-MM-DD or readable format)." },
+        "personName": { "type": "string", "description": "The individual who performed this inventory check." },
+        "quantity": { "type": "number", "description": "Count/Quantity recorded." },
+        "location": { "type": "string", "description": "Storage location or warehouse." },
+        "notes": { "type": "string", "description": "Additional notes or status comments." },
+        "additionalFields": { "type": "object", "description": "Flexible key-value map for other CSV column values." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of record upload." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of last edit." },
+        "ownerId": { "type": "string", "description": "UID of the user who imported this record." }
+      },
+      "required": ["itemId", "itemName", "inventoryDate", "personName", "quantity", "createdAt", "updatedAt", "ownerId"]
+    }
+  },
+  "firestore": {
+    "/items/{itemId}": {
+      "schema": "Item",
+      "description": "Primary inventory item details tracked globally."
+    },
+    "/items/{itemId}/records/{recordId}": {
+      "schema": "InventoryRecord",
+      "description": "Historical inventory check entries for a specific item."
+    }
+  }
+}
