@@ -23,7 +23,7 @@ x-casaos:
   title:
     en_us: "Jardi"
   scheme: http
-  port_map: "3000"
+  port_map: "8080"
 
 services:
   jardi:
@@ -35,12 +35,14 @@ services:
       args:
         # If your build process requires compile-time Vite variables:
         # You can declare them here so they are passed to Vite during build
-        - VITE_APP_URL=${APP_URL:-http://localhost:3000}
+        - VITE_APP_URL=${APP_URL:-http://localhost:8080}
     ports:
-      - "3000:3000"
+      - "8080:8080"
+    volumes:
+      - "/DATA/AppData/jardi/data:/app/data"
     environment:
-      - PORT=3000
-      - APP_URL=${APP_URL:-http://localhost:3000}
+      - PORT=8080
+      - APP_URL=${APP_URL:-http://localhost:8080}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     restart: unless-stopped
     logging:
