@@ -16,9 +16,9 @@ export default function AuthBar({ user, loading }: AuthBarProps) {
           </div>
           <div className="flex flex-col">
             <h1 className="text-xl font-bold font-display text-slate-900 tracking-tight leading-none" id="app-title">
-              جردي <span className="text-emerald-600 text-sm font-medium font-sans">Jardi</span>
+              جردي
             </h1>
-            <p className="text-[10px] text-slate-500 font-sans mt-0.5">البحث السريع وأرشيف الجرد المخزني</p>
+            <p className="text-[10px] text-slate-500 font-sans mt-0.5">بحث عن معلومات الجرد و الشلف</p>
           </div>
         </div>
 
