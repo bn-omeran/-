@@ -106,7 +106,16 @@ export default function App() {
     // Already loaded locally, no action needed
   };
 
-  // Fuzzy match filter
+  // Memoized pre-normalized search fields for extreme performance
+  const preNormalizedItems = useMemo(() => {
+    return items.map((item) => ({
+      item,
+      normalizedName: normalizeText(item.name),
+      normalizedCategory: normalizeText(item.category || ''),
+    }));
+  }, [items]);
+
+  // Fuzzy match filter restricted solely to name and category
   const filteredItems = useMemo(() => {
     if (!searchQuery.trim()) return items;
     const normalizedQuery = normalizeText(searchQuery);
@@ -114,13 +123,13 @@ export default function App() {
 
     if (queryWords.length === 0) return items;
 
-    return items.filter((item) => {
-      const searchableText = normalizeText(
-        `${item.name} ${item.code || ''} ${item.category || ''} ${item.latestPerson || ''} ${item.latestLocation || ''}`
-      );
-      return queryWords.every((word) => searchableText.includes(word));
-    });
-  }, [items, searchQuery]);
+    return preNormalizedItems
+      .filter(({ normalizedName, normalizedCategory }) => {
+        const searchableText = `${normalizedName} ${normalizedCategory}`;
+        return queryWords.every((word) => searchableText.includes(word));
+      })
+      .map(({ item }) => item);
+  }, [preNormalizedItems, searchQuery]);
 
   // Delete inventory item and its records natively from local storage
   const handleDeleteItem = (itemToDelete: Item, e: React.MouseEvent) => {
@@ -270,7 +279,7 @@ export default function App() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث باسم الصنف، الباركود، المستودع..."
+                    placeholder="ابحث باسم الصنف أو القسم فقط..."
                     className="w-full bg-slate-50 border border-slate-200 outline-none rounded-xl pr-10 pl-9 py-2.5 text-xs text-slate-800 focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all font-sans"
                     id="search-input"
                   />
